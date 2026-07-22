@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Pauta do Dia</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --bg:#14171C;
+    --panel:#1B1F27;
+    --panel-hover:#20252F;
+    --border:#2A2F3A;
+    --text:#EDEEF0;
+    --muted:#8B92A0;
+    --live:#E4572E;
+    --politica:#E4572E;
+    --noticias:#E8B93F;
+    --tech:#4FB0C6;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    padding:0;
+  }
+
+  .wrap{max-width:920px;margin:0 auto;padding:32px 24px 80px;}
+
+  /* Broadcast clock header */
+  .clock-bar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    border:1px solid var(--border);
+    border-radius:6px;
+    padding:14px 20px;
+    margin-bottom:28px;
+    background:var(--panel);
+  }
+  .clock-left{display:flex;align-items:center;gap:10px;}
+  .dot{
+    width:9px;height:9px;border-radius:50%;
+    background:var(--live);
+    box-shadow:0 0 0 0 rgba(228,87,46,.6);
+    animation:pulse 1.8s infinite;
+  }
+  @keyframes pulse{
+    0%{box-shadow:0 0 0 0 rgba(228,87,46,.55);}
+    70%{box-shadow:0 0 0 8px rgba(228,87,46,0);}
+    100%{box-shadow:0 0 0 0 rgba(228,87,46,0);}
+  }
+  .clock-left span{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:.12em;
+    color:var(--live);
+    font-weight:600;
+  }
+  .clock-right{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:var(--muted);
+  }
+
+  h1{
+    font-family:'Oswald',sans-serif;
+    font-size:38px;
+    font-weight:700;
+    letter-spacing:.01em;
+    text-transform:uppercase;
+    margin-bottom:4px;
+  }
+  .subtitle{
+    color:var(--muted);
+    font-size:14px;
+    margin-bottom:24px;
+  }
+
+  .controls{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    margin-bottom:28px;
+    flex-wrap:wrap;
+  }
+  button{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    background:var(--live);
+    color:#14171C;
+    border:none;
+    padding:11px 18px;
+    border-radius:4px;
+    font-weight:600;
+    cursor:pointer;
+    transition:opacity .15s ease;
+  }
+  button:hover{opacity:.85;}
+  button:disabled{opacity:.5;cursor:default;}
+
+  .filters{display:flex;gap:8px;}
+  .filter-chip{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    padding:8px 14px;
+    border-radius:4px;
+    border:1px solid var(--border);
+    background:transparent;
+    color:var(--muted);
+    cursor:pointer;
+  }
+  .filter-chip.active[data-cat="politica"]{border-color:var(--politica);color:var(--politica);}
+  .filter-chip.active[data-cat="noticias"]{border-color:var(--noticias);color:var(--noticias);}
+  .filter-chip.active[data-cat="tech"]{border-color:var(--tech);color:var(--tech);}
+  .filter-chip.active[data-cat="todos"]{border-color:var(--text);color:var(--text);}
+
+  #status{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:var(--muted);
+    margin-bottom:20px;
+    min-height:16px;
+  }
+
+  .rundown{display:flex;flex-direction:column;gap:12px;}
+
+  .bloco{
+    display:grid;
+    grid-template-columns:56px 1fr;
+    gap:18px;
+    border:1px solid var(--border);
+    border-radius:6px;
+    background:var(--panel);
+    padding:18px 20px;
+    transition:background .15s ease, border-color .15s ease;
+  }
+  .bloco:hover{background:var(--panel-hover);}
+
+  .bloco-num{
+    font-family:'Oswald',sans-serif;
+    font-size:26px;
+    font-weight:600;
+    color:var(--border);
+    line-height:1;
+  }
+
+  .bloco-body{display:flex;flex-direction:column;gap:8px;}
+
+  .bloco-meta{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .tag{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    padding:3px 8px;
+    border-radius:3px;
+    font-weight:600;
+  }
+  .tag[data-cat="politica"]{background:rgba(228,87,46,.15);color:var(--politica);}
+  .tag[data-cat="noticias"]{background:rgba(232,185,63,.15);color:var(--noticias);}
+  .tag[data-cat="tech"]{background:rgba(79,176,198,.15);color:var(--tech);}
+
+  .source{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    color:var(--muted);
+  }
+
+  .headline{
+    font-size:18px;
+    font-weight:700;
+    line-height:1.3;
+  }
+
+  .gancho{
+    font-size:14px;
+    color:#C7CBD3;
+    line-height:1.5;
+    border-left:2px solid var(--border);
+    padding-left:10px;
+  }
+  .gancho b{color:var(--text);font-weight:600;}
+
+  .link-row a{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    color:var(--muted);
+    text-decoration:none;
+    border-bottom:1px solid var(--border);
+  }
+  .link-row a:hover{color:var(--text);border-color:var(--text);}
+
+  .empty, .error{
+    text-align:center;
+    color:var(--muted);
+    font-size:14px;
+    padding:60px 20px;
+    border:1px dashed var(--border);
+    border-radius:6px;
+  }
+  .error{color:var(--politica);}
+
+  .skeleton{
+    height:86px;
+    border-radius:6px;
+    background:linear-gradient(90deg,var(--panel) 0%,var(--panel-hover) 50%,var(--panel) 100%);
+    background-size:200% 100%;
+    animation:shimmer 1.4s infinite;
+  }
+  @keyframes shimmer{
+    0%{background-position:200% 0;}
+    100%{background-position:-200% 0;}
+  }
+
+  @media (max-width:600px){
+    h1{font-size:28px;}
+    .bloco{grid-template-columns:36px 1fr;padding:14px;}
+    .bloco-num{font-size:20px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="clock-bar">
+    <div class="clock-left">
+      <div class="dot"></div>
+      <span>PAUTA AO VIVO</span>
+    </div>
+    <div class="clock-right" id="clockDisplay">--:--:--</div>
+  </div>
+
+  <h1>Pauta do Dia</h1>
+  <p class="subtitle">Assuntos quentes de política, notícias e tecnologia — prontos pra puxar entre uma partida e outra.</p>
+
+  <div class="controls">
+    <button id="refreshBtn">Atualizar pauta</button>
+    <div class="filters">
+      <button class="filter-chip active" data-cat="todos">Todos</button>
+      <button class="filter-chip" data-cat="politica">Política</button>
+      <button class="filter-chip" data-cat="noticias">Notícias</button>
+      <button class="filter-chip" data-cat="tech">Tech</button>
+    </div>
+  </div>
+
+  <div id="status"></div>
+
+  <div class="rundown" id="rundown">
+    <div class="skeleton"></div>
+    <div class="skeleton"></div>
+    <div class="skeleton"></div>
+  </div>
+
+</div>
+
+<script>
+let allItems = [];
+let activeFilter = 'todos';
+
+function updateClock(){
+  const now = new Date();
+  document.getElementById('clockDisplay').textContent = now.toLocaleTimeString('pt-BR', {hour12:false});
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+function setStatus(msg){
+  document.getElementById('status').textContent = msg;
+}
+
+function catLabel(cat){
+  return {politica:'Política', noticias:'Notícias', tech:'Tech'}[cat] || cat;
+}
+
+function render(){
+  const rundown = document.getElementById('rundown');
+  const items = activeFilter === 'todos' ? allItems : allItems.filter(i => i.category === activeFilter);
+
+  if(items.length === 0){
+    rundown.innerHTML = '<div class="empty">Nenhum item nessa categoria ainda. Clique em "Atualizar pauta".</div>';
+    return;
+  }
+
+  rundown.innerHTML = items.map((item, idx) => `
+    <div class="bloco">
+      <div class="bloco-num">${String(idx+1).padStart(2,'0')}</div>
+      <div class="bloco-body">
+        <div class="bloco-meta">
+          <span class="tag" data-cat="${item.category}">${catLabel(item.category)}</span>
+          <span class="source">${escapeHtml(item.source_name || '')}</span>
+        </div>
+        <div class="headline">${escapeHtml(item.headline)}</div>
+        <div class="gancho"><b>Gancho pra falar:</b> ${escapeHtml(item.gancho)}</div>
+        <div class="link-row"><a href="${escapeAttr(item.source_url)}" target="_blank" rel="noopener">ver fonte ↗</a></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function escapeHtml(str){
+  if(!str) return '';
+  return str.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+function escapeAttr(str){
+  return (str || '#').replace(/"/g,'%22');
+}
+
+document.querySelectorAll('.filter-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    activeFilter = chip.dataset.cat;
+    render();
+  });
+});
+
+async function fetchPauta(){
+  const btn = document.getElementById('refreshBtn');
+  btn.disabled = true;
+  btn.textContent = 'Buscando...';
+  setStatus('Vasculhando as fontes de hoje...');
+  document.getElementById('rundown').innerHTML = '<div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>';
+
+  try{
+    const response = await fetch("/.netlify/functions/pauta");
+    const data = await response.json();
+
+    if(!response.ok){
+      throw new Error(data.error || 'Erro ao buscar a pauta');
+    }
+
+    allItems = Array.isArray(data) ? data.filter(i => i && i.headline) : [];
+
+    if(allItems.length === 0){
+      document.getElementById('rundown').innerHTML = '<div class="empty">Não veio nenhum item dessa vez. Tenta atualizar de novo.</div>';
+    } else {
+      render();
+    }
+
+    const now = new Date();
+    setStatus('Pauta atualizada às ' + now.toLocaleTimeString('pt-BR', {hour12:false}) + ' · ' + allItems.length + ' itens');
+
+  }catch(err){
+    console.error(err);
+    document.getElementById('rundown').innerHTML = '<div class="error">Não deu pra montar a pauta agora. Clique em "Atualizar pauta" pra tentar de novo.</div>';
+    setStatus('Erro ao buscar: ' + err.message);
+  }finally{
+    btn.disabled = false;
+    btn.textContent = 'Atualizar pauta';
+  }
+}
+
+document.getElementById('refreshBtn').addEventListener('click', fetchPauta);
+fetchPauta();
+</script>
+
+</body>
+</html>
